@@ -5,7 +5,7 @@
 # ruth-cli
 
 [![Release](https://img.shields.io/github/v/release/zhongdai/ruth-cli)](https://github.com/zhongdai/ruth-cli/releases)
-[![Build](https://github.com/zhongdai/ruth-cli/actions/workflows/release.yml/badge.svg)](https://github.com/zhongdai/ruth-cli/actions/workflows/release.yml)
+[![CI](https://github.com/zhongdai/ruth-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/zhongdai/ruth-cli/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Homebrew](https://img.shields.io/badge/homebrew-zhongdai%2Ftap-orange)](https://github.com/zhongdai/homebrew-tap)
 
