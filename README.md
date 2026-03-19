@@ -147,3 +147,9 @@ just lint       # Run clippy
 just check      # Run tests + clippy + fmt check
 just release 0.1.0  # Tag and push a release (triggers GitHub Actions)
 ```
+
+## Disclaimer
+
+This project was co-developed with [Claude Code](https://claude.ai/claude-code) by Anthropic. While the TOTP implementation follows RFC 6238 and is tested against the official test vectors, this software is provided **as-is, without warranty of any kind**. Use it at your own risk.
+
+The authors are not responsible for any loss of access to accounts, security breaches, or other damages resulting from the use of this tool. Always keep backup 2FA recovery codes for your accounts.
