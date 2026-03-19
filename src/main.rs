@@ -79,8 +79,16 @@ fn cmd_get(config: &Config, label: &str) -> Result<()> {
 fn cmd_list(config: &Config) -> Result<()> {
     gpg::check_gpg()?;
     let store = load_store(config)?;
-    for label in store.labels() {
-        println!("{}", label);
+    let entries = store.entries();
+    if entries.is_empty() {
+        eprintln!("No entries found.");
+        return Ok(());
+    }
+    // Find max widths for alignment
+    let lw = entries.iter().map(|e| e.label.len()).max().unwrap_or(0);
+    let dw = entries.iter().map(|e| e.domain.len()).max().unwrap_or(0);
+    for entry in entries {
+        println!("{:<lw$}  {:<dw$}  {}", entry.label, entry.domain, entry.account);
     }
     Ok(())
 }
