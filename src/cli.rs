@@ -31,35 +31,35 @@ pub enum Commands {
 #[derive(clap::Args)]
 pub struct AddArgs {
     /// Path to a QR code image
-    #[arg(long, conflicts_with_all = ["secret"])]
+    #[arg(short, long, conflicts_with_all = ["secret"])]
     pub qr: Option<PathBuf>,
 
     /// Label for the entry
-    #[arg(long)]
+    #[arg(short, long)]
     pub label: Option<String>,
 
     /// Domain / service name
-    #[arg(long, required_unless_present = "qr")]
+    #[arg(short, long, required_unless_present = "qr")]
     pub domain: Option<String>,
 
     /// Account identifier (e.g. email)
-    #[arg(long, required_unless_present = "qr")]
+    #[arg(short, long, required_unless_present = "qr")]
     pub account: Option<String>,
 
     /// Base32-encoded secret
-    #[arg(long, required_unless_present = "qr")]
+    #[arg(short, long, required_unless_present = "qr")]
     pub secret: Option<String>,
 
     /// HMAC algorithm (SHA1, SHA256, SHA512)
-    #[arg(long, default_value = "SHA1")]
+    #[arg(short = 'A', long, default_value = "SHA1")]
     pub algorithm: String,
 
     /// Number of digits in the code
-    #[arg(long, default_value = "6")]
+    #[arg(short = 'n', long, default_value = "6")]
     pub digits: u32,
 
     /// Time period in seconds
-    #[arg(long, default_value = "30")]
+    #[arg(short, long, default_value = "30")]
     pub period: u64,
 }
 
