@@ -11,7 +11,7 @@
 
 ```
 ruth-cli add --qr /path/to/qr.png [--label <label>]
-ruth-cli add --label <label> --domain <domain> --account <account> --secret <secret> [--digits 6] [--period 30]
+ruth-cli add --label <label> --domain <domain> --account <account> --secret <secret> [--algorithm SHA1] [--digits 6] [--period 30]
 ruth-cli get <label>
 ruth-cli list
 ruth-cli rm <label>
@@ -42,6 +42,7 @@ label = "github-work"
 domain = "github.com"
 account = "user@work.com"
 secret = "JBSWY3DPEHPK3PXP"
+algorithm = "SHA1"
 digits = 6
 period = 30
 
@@ -50,6 +51,7 @@ label = "aws-prod"
 domain = "aws.amazon.com"
 account = "admin@company.com"
 secret = "KRSXG5CTMVRXEZLU"
+algorithm = "SHA256"
 digits = 6
 period = 30
 ```
@@ -76,9 +78,13 @@ gpg_key_id = "user@example.com"
 
 ### Mutation Workflow (add/rm)
 
-1. Decrypt store to TOML in memory
+1. Decrypt store to TOML in memory (decrypted data is never written to disk or temp files)
 2. Modify entries
-3. Serialize to TOML, re-encrypt, write back to store path
+3. Serialize to TOML, pipe directly to `gpg --encrypt` via stdin, write ciphertext to store path
+
+### Directory Permissions
+
+On first run, create `~/.config/ruth-cli/` with mode `0700`.
 
 ## TOTP Algorithm (RFC 6238)
 
@@ -86,11 +92,13 @@ Implementation of TOTP on top of HOTP (RFC 4226):
 
 1. **Decode** the base32-encoded secret into bytes
 2. **Compute time step:** `T = floor(current_unix_time / period)`
-3. **HMAC-SHA1:** `hmac_sha1(secret_bytes, T as big-endian u64)`
+3. **HMAC:** Compute HMAC using the configured algorithm (SHA1, SHA256, or SHA512) over `(secret_bytes, T as big-endian u64)`
 4. **Dynamic truncation:** Extract 4 bytes from the HMAC using the offset in the last nibble
 5. **Modulo:** `truncated_value % 10^digits`, zero-padded to `digits` length
 
-**Crates used:** `hmac` + `sha1` for HMAC-SHA1, `data-encoding` for base32 decoding. No external TOTP library — the algorithm is ~30 lines.
+**Supported algorithms:** SHA1 (default), SHA256, SHA512. Selected per-entry via the `algorithm` field.
+
+**Crates used:** `hmac` + `sha1` + `sha2` for HMAC computation, `data-encoding` for base32 decoding. No external TOTP library — the algorithm is ~40 lines.
 
 ## GPG Integration
 
@@ -119,8 +127,8 @@ Plaintext TOML piped to stdin.
 **Flow:**
 1. Read image file (PNG/JPEG)
 2. Decode QR code to string
-3. Parse `otpauth://totp/Label?secret=...&issuer=...&digits=...&period=...`
-4. Extract fields: secret (required), issuer, account, digits, period
+3. Parse `otpauth://totp/Label?secret=...&issuer=...&algorithm=...&digits=...&period=...`
+4. Extract fields: secret (required), issuer, account, algorithm, digits, period
 5. Auto-generate label: `issuer-account` > `issuer` > `account` > require `--label`
 
 ## Project Structure
@@ -146,7 +154,8 @@ ruth-cli/
 
 - `clap` (derive) — CLI argument parsing
 - `serde` + `toml` — TOML serialization/deserialization
-- `hmac` + `sha1` — TOTP HMAC computation
+- `hmac` + `sha1` + `sha2` — TOTP HMAC computation (SHA1/SHA256/SHA512)
+- `anyhow` — error handling
 - `data-encoding` — base32 decoding
 - `image` + `rqrr` — QR code image reading and decoding
 - `url` — parsing `otpauth://` URIs
@@ -159,7 +168,8 @@ ruth-cli/
 
 ## Error Handling
 
-- **Duplicate labels:** `add` rejects if label already exists. User must `rm` first.
+- **Secret validation at add-time:** Base32 decode is validated when adding an entry. Invalid secrets are rejected immediately, not deferred to `get`.
+- **Duplicate labels:** `add` rejects if label already exists. Error message includes the conflicting label name so the user can `rm` it or re-add with a custom `--label`.
 - **Missing QR fields:** Falls back to available fields. Secret is required; if missing, error. Label auto-generation falls through: `issuer-account` > `issuer` > `account` > require `--label`.
 - **GPG not found:** Clear error with install hint.
 - **Decryption failure:** Surface `gpg` stderr to user.
@@ -167,3 +177,19 @@ ruth-cli/
 - **Invalid secret on get:** "Invalid secret for label X, re-add the entry."
 - **Time sync:** TOTP depends on system clock. No NTP check — clock issues are outside tool scope.
 - **Concurrent access:** Not handled. Single-user CLI tool; OS-level file locking from GPG surfaces naturally.
+
+## Testing Strategy
+
+- **TOTP algorithm:** Unit tests against RFC 6238 test vectors for SHA1, SHA256, and SHA512.
+- **otpauth:// URI parsing:** Unit tests covering valid URIs, missing optional fields, missing required fields, and edge cases.
+- **Store CRUD:** Unit tests for add/remove/list operations on the in-memory TOML structure.
+- **GPG round-trip:** Integration tests using a test GPG key (generated in CI) to verify encrypt/decrypt cycle.
+- **QR decoding:** Unit tests with sample QR image fixtures in `tests/fixtures/`.
+- **Config resolution:** Unit tests verifying flag > env > file precedence.
+
+## Deliberate Scope Exclusions
+
+- **No `edit`/`update` subcommand.** To change an entry, `rm` then `add`. Acceptable for v1.
+- **No shell completion generation.** Can be added later via `clap_complete`.
+- **No `--json` output.** Plain text stdout is sufficient for agent consumption. Can be added later.
+- **No `--remaining` flag on `get`.** Agents can compute this from the period if needed. Can be added later.
