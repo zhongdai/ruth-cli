@@ -7,9 +7,11 @@ pub fn check_gpg() -> Result<()> {
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .status()
-        .map_err(|_| anyhow!(
+        .map_err(|_| {
+            anyhow!(
             "gpg not found. Install GPG:\n  macOS: brew install gnupg\n  Linux: apt install gnupg"
-        ))?;
+        )
+        })?;
     Ok(())
 }
 

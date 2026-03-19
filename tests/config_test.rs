@@ -6,7 +6,10 @@ fn test_default_store_path() {
     std::env::remove_var("RUTH_STORE");
     std::env::remove_var("RUTH_GPG_ID");
     let config = Config::resolve(None, None, None);
-    let expected = dirs::config_dir().unwrap().join("ruth-cli").join("store.toml.gpg");
+    let expected = dirs::config_dir()
+        .unwrap()
+        .join("ruth-cli")
+        .join("store.toml.gpg");
     assert_eq!(config.store_path, expected);
 }
 

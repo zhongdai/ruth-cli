@@ -4,17 +4,12 @@ use hmac::{Hmac, Mac};
 use sha1::Sha1;
 use sha2::{Sha256, Sha512};
 
-#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum Algorithm {
+    #[default]
     SHA1,
     SHA256,
     SHA512,
-}
-
-impl Default for Algorithm {
-    fn default() -> Self {
-        Algorithm::SHA1
-    }
 }
 
 impl std::fmt::Display for Algorithm {
@@ -47,7 +42,13 @@ pub fn validate_secret(secret: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn generate(secret: &str, time: u64, period: u64, digits: u32, algorithm: Algorithm) -> Result<String> {
+pub fn generate(
+    secret: &str,
+    time: u64,
+    period: u64,
+    digits: u32,
+    algorithm: Algorithm,
+) -> Result<String> {
     let clean: String = secret.chars().filter(|c| !c.is_whitespace()).collect();
     let key = BASE32
         .decode(clean.to_uppercase().as_bytes())
@@ -58,8 +59,8 @@ pub fn generate(secret: &str, time: u64, period: u64, digits: u32, algorithm: Al
 
     let hmac_result = match algorithm {
         Algorithm::SHA1 => {
-            let mut mac = Hmac::<Sha1>::new_from_slice(&key)
-                .map_err(|e| anyhow!("HMAC key error: {}", e))?;
+            let mut mac =
+                Hmac::<Sha1>::new_from_slice(&key).map_err(|e| anyhow!("HMAC key error: {}", e))?;
             mac.update(&counter_bytes);
             mac.finalize().into_bytes().to_vec()
         }
@@ -86,10 +87,19 @@ pub fn generate(secret: &str, time: u64, period: u64, digits: u32, algorithm: Al
     ]);
 
     let modulus = 10u32.pow(digits);
-    Ok(format!("{:0>width$}", code % modulus, width = digits as usize))
+    Ok(format!(
+        "{:0>width$}",
+        code % modulus,
+        width = digits as usize
+    ))
 }
 
-pub fn generate_now(secret: &str, period: u64, digits: u32, algorithm: Algorithm) -> Result<String> {
+pub fn generate_now(
+    secret: &str,
+    period: u64,
+    digits: u32,
+    algorithm: Algorithm,
+) -> Result<String> {
     let time = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .map_err(|e| anyhow!("system time error: {}", e))?
