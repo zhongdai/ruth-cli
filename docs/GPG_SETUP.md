@@ -158,6 +158,16 @@ gpg --import private-key.asc
 gpg --edit-key jane@example.com trust  # set trust level to 5 (ultimate)
 ```
 
+## Essential Shell Config
+
+Add this to your `~/.bashrc` or `~/.zshrc` — required for GPG passphrase prompts to work in the terminal:
+
+```bash
+export GPG_TTY=$(tty)
+```
+
+Without this, you'll get "Inappropriate ioctl for device" errors when ruth-cli tries to decrypt.
+
 ## Troubleshooting
 
 ### "gpg: decryption failed: No secret key"
@@ -168,7 +178,7 @@ Your private key is not available. Import it or check `gpg --list-secret-keys`.
 
 The key ID in your ruth-cli config doesn't match any key in your keyring. Run `gpg --list-keys` to verify.
 
-### "gpg: signing failed: Inappropriate ioctl for device"
+### "gpg: decryption failed: Inappropriate ioctl for device"
 
 GPG can't open a pinentry dialog. Fix:
 
@@ -177,3 +187,7 @@ export GPG_TTY=$(tty)
 ```
 
 Add this to your `~/.bashrc` or `~/.zshrc` to make it permanent.
+
+### "gpg: There is no assurance this key belongs to the named user"
+
+ruth-cli handles this automatically with `--trust-model always`. If you still see this error, ensure you're using the latest version of ruth-cli.

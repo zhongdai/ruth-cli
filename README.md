@@ -27,28 +27,38 @@ cargo install --path .
    export RUTH_GPG_ID="your-key@example.com"
    ```
 
+   See [GPG Setup Guide](docs/GPG_SETUP.md) for installing GPG, creating keys, and finding your key ID.
+
 2. Add your first entry:
 
    ```bash
-   # From a QR code image
-   ruth-cli add --qr /path/to/qr.png
+   # From a QR code image (auto-extracts all fields)
+   ruth-cli add -q /path/to/qr.png
 
    # Manual entry
-   ruth-cli add --label github --domain github.com --account me@example.com --secret JBSWY3DPEHPK3PXP
+   ruth-cli add -l github -d github.com -a me@example.com -s JBSWY3DPEHPK3PXP
+   ```
+
+   On success, ruth-cli prints the stored label:
+   ```
+   Added entry 'github'. Use `ruth-cli get github` to get the code.
    ```
 
 ## Usage
 
 ```bash
-# Get a TOTP code
+# Get a TOTP code (prints only the code to stdout)
 ruth-cli get github
 # Output: 482937
 
-# Use in scripts
+# Use in scripts — capture the code
 TOKEN=$(ruth-cli get github)
 
-# List all entries
+# List all entries (label, domain, account)
 ruth-cli list
+# Output:
+# github       github.com       me@example.com
+# aws-prod     aws.amazon.com   admin@company.com
 
 # Remove an entry
 ruth-cli rm github
@@ -58,37 +68,67 @@ ruth-cli rm github
 
 | Command | Description |
 |---------|------------|
-| `add --qr <path>` | Add entry from QR code image |
-| `add --label <l> --secret <s> ...` | Add entry manually |
-| `get <label>` | Print current TOTP code |
-| `list` | Print all labels |
-| `rm <label>` | Remove an entry |
+| `add` | Add a new TOTP entry from QR code or manual input |
+| `get <label>` | Print the current TOTP code to stdout |
+| `list` | List all entries with label, domain, and account |
+| `rm <label>` | Remove an entry by label |
 
 ## Add Options
 
-| Flag | Default | Description |
-|------|---------|------------|
-| `--qr <path>` | | QR code image (PNG/JPEG) |
-| `--label <name>` | auto from QR | Entry label |
-| `--domain <domain>` | | Service domain |
-| `--account <account>` | | Account identifier |
-| `--secret <base32>` | | TOTP secret |
-| `--algorithm <alg>` | SHA1 | SHA1, SHA256, or SHA512 |
-| `--digits <n>` | 6 | Code length |
-| `--period <secs>` | 30 | Time step in seconds |
+| Short | Long | Default | Description |
+|-------|------|---------|------------|
+| `-q` | `--qr <path>` | | QR code image (PNG/JPEG), mutually exclusive with `-s` |
+| `-l` | `--label <name>` | auto from QR | Entry label, used with `get` and `rm` |
+| `-d` | `--domain <domain>` | | Service domain (e.g. github.com) |
+| `-a` | `--account <account>` | | Account identifier (e.g. email) |
+| `-s` | `--secret <base32>` | | Base32-encoded TOTP secret |
+| `-A` | `--algorithm <alg>` | SHA1 | SHA1, SHA256, or SHA512 |
+| `-n` | `--digits <n>` | 6 | Number of digits in the code |
+| `-p` | `--period <secs>` | 30 | Time step in seconds |
 
 ## Global Flags
 
-| Flag | Env Var | Description |
-|------|---------|------------|
-| `--config <path>` | `RUTH_STORE` | Path to encrypted store |
-| `--gpg-id <key>` | `RUTH_GPG_ID` | GPG recipient key ID |
+| Flag | Env Var | Default | Description |
+|------|---------|---------|------------|
+| `--config <path>` | `RUTH_STORE` | `~/.config/ruth-cli/store.toml.gpg` | Path to encrypted store |
+| `--gpg-id <key>` | `RUTH_GPG_ID` | from `~/.config/ruth-cli/config.toml` | GPG recipient key ID |
+
+## Config Resolution
+
+Both the store path and GPG key ID follow the same precedence: **CLI flag > env var > config file**.
+
+```
+Store path:  --config  >  RUTH_STORE  >  ~/.config/ruth-cli/store.toml.gpg
+GPG key ID:  --gpg-id  >  RUTH_GPG_ID  >  gpg_key_id in ~/.config/ruth-cli/config.toml
+```
 
 ## Storage
 
-Secrets are stored in `~/.config/ruth-cli/store.toml.gpg`, encrypted with your GPG key. The decrypted data is never written to disk. Override with `--config <path>` or `RUTH_STORE` env var.
+Secrets are stored in `~/.config/ruth-cli/store.toml.gpg`, encrypted with your GPG key. The decrypted data is never written to disk — it is held in memory only and piped directly to/from `gpg`.
+
+## Agent Integration
+
+ruth-cli is designed to be used by AI agents and scripts:
+
+- **Non-interactive**: all input via flags, env vars, or config files — no prompts
+- **Clean stdout**: `get` outputs only the TOTP code, nothing else
+- **Status on stderr**: informational messages (e.g. "Added entry...") go to stderr
+- **Exit codes**: 0 on success, non-zero on error
+- **Scriptable**: `TOKEN=$(ruth-cli get github)` captures the code directly
 
 ## Requirements
 
 - [GPG](https://gnupg.org/) installed and a key pair configured
-- A working `gpg-agent` for passphrase caching (optional but recommended)
+- A working `gpg-agent` for passphrase caching (recommended — avoids repeated passphrase prompts)
+- Add `export GPG_TTY=$(tty)` to your shell profile for terminal pinentry support
+
+## Development
+
+Requires [just](https://github.com/casey/just) for task running:
+
+```bash
+just test       # Run all tests
+just lint       # Run clippy
+just check      # Run tests + clippy + fmt check
+just release 0.1.0  # Tag and push a release (triggers GitHub Actions)
+```
