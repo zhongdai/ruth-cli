@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="asserts/logo.png" alt="ruth-cli" width="200">
+</p>
+
 # ruth-cli
 
 [![Release](https://img.shields.io/github/v/release/zhongdai/ruth-cli)](https://github.com/zhongdai/ruth-cli/releases)
