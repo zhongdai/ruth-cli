@@ -1,6 +1,20 @@
 use anyhow::{anyhow, Context, Result};
 use std::process::{Command, Stdio};
 
+/// Build a base GPG command with GPG_TTY set for pinentry support.
+fn gpg_command() -> Command {
+    let mut cmd = Command::new("gpg");
+    // Ensure GPG can find the terminal for passphrase prompts
+    if let Ok(tty) = std::env::var("GPG_TTY") {
+        cmd.env("GPG_TTY", tty);
+    } else if let Ok(tty_path) = std::fs::read_link("/dev/fd/0")
+        .or_else(|_| std::env::var("TTY").map(std::path::PathBuf::from))
+    {
+        cmd.env("GPG_TTY", tty_path);
+    }
+    cmd
+}
+
 pub fn check_gpg() -> Result<()> {
     Command::new("gpg")
         .arg("--version")
@@ -9,14 +23,14 @@ pub fn check_gpg() -> Result<()> {
         .status()
         .map_err(|_| {
             anyhow!(
-            "gpg not found. Install GPG:\n  macOS: brew install gnupg\n  Linux: apt install gnupg"
-        )
+                "gpg not found. Install GPG:\n  macOS: brew install gnupg\n  Linux: apt install gnupg"
+            )
         })?;
     Ok(())
 }
 
 pub fn decrypt(path: &std::path::Path) -> Result<String> {
-    let output = Command::new("gpg")
+    let output = gpg_command()
         .args(["--quiet", "--yes", "--batch", "--decrypt"])
         .arg(path)
         .output()
@@ -31,7 +45,7 @@ pub fn decrypt(path: &std::path::Path) -> Result<String> {
 }
 
 pub fn encrypt(plaintext: &str, recipient: &str, path: &std::path::Path) -> Result<()> {
-    let mut child = Command::new("gpg")
+    let mut child = gpg_command()
         .args([
             "--quiet",
             "--yes",
