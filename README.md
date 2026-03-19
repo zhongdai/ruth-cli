@@ -4,6 +4,13 @@ Agent-friendly TOTP authenticator CLI. Generates time-based one-time passwords (
 
 ## Install
 
+### Homebrew (macOS / Linux)
+
+```bash
+brew tap zhongdai/tap
+brew install ruth-cli
+```
+
 ### From GitHub Releases
 
 Download the latest binary for your platform from [Releases](../../releases).

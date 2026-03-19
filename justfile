@@ -49,8 +49,35 @@ release version:
     echo "Pushing tag $TAG to origin..."
     git push origin "$TAG"
     echo ""
+    echo "Updating Homebrew tap..."
+    just bump-tap {{version}}
+    echo ""
     echo "Done! Release $TAG pushed. GitHub Actions will build and publish artifacts."
     echo "Track progress: https://github.com/zhongdai/ruth-cli/actions"
+
+# Update Homebrew tap formula with new version SHA
+# Usage: just bump-tap 0.2.0
+bump-tap version:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    TAG="v{{version}}"
+    URL="https://github.com/zhongdai/ruth-cli/archive/refs/tags/${TAG}.tar.gz"
+    echo "Fetching SHA256 for $URL..."
+    SHA=$(curl -sL "$URL" | shasum -a 256 | cut -d' ' -f1)
+    echo "SHA256: $SHA"
+    TAP_DIR=$(brew --repository zhongdai/tap 2>/dev/null || echo "")
+    if [ -z "$TAP_DIR" ] || [ ! -d "$TAP_DIR" ]; then
+        echo "Tap not found locally. Clone it first: brew tap zhongdai/tap"
+        exit 1
+    fi
+    FORMULA="$TAP_DIR/Formula/ruth-cli.rb"
+    sed -i '' "s|url \".*\"|url \"$URL\"|" "$FORMULA"
+    sed -i '' "s|sha256 \".*\"|sha256 \"$SHA\"|" "$FORMULA"
+    cd "$TAP_DIR"
+    git add Formula/ruth-cli.rb
+    git commit -m "Bump ruth-cli to ${TAG}"
+    git push
+    echo "Homebrew tap updated to ${TAG}"
 
 # List all tags
 tags:
