@@ -8,9 +8,17 @@ Agent-friendly TOTP authenticator CLI. Generates time-based one-time passwords (
 
 Download the latest binary for your platform from [Releases](../../releases).
 
+### Via Cargo
+
+```bash
+cargo install --git https://github.com/zhongdai/ruth-cli.git
+```
+
 ### From Source
 
 ```bash
+git clone https://github.com/zhongdai/ruth-cli.git
+cd ruth-cli
 cargo install --path .
 ```
 
