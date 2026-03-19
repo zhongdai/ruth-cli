@@ -101,12 +101,8 @@ Any of these formats work with `ruth-cli`:
 
 ```bash
 # Option A: config file (recommended)
-# macOS: ~/Library/Application Support/ruth-cli/
-# Linux: ~/.config/ruth-cli/
-CONFIG_DIR="${XDG_CONFIG_HOME:-${HOME}/.config}/ruth-cli"  # Linux
-# CONFIG_DIR="${HOME}/Library/Application Support/ruth-cli"  # macOS
-mkdir -p "$CONFIG_DIR"
-echo 'gpg_key_id = "jane@example.com"' > "$CONFIG_DIR/config.toml"
+mkdir -p ~/.config/ruth-cli
+echo 'gpg_key_id = "jane@example.com"' > ~/.config/ruth-cli/config.toml
 
 # Option B: environment variable
 export RUTH_GPG_ID="jane@example.com"

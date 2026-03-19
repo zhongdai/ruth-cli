@@ -19,9 +19,8 @@ impl Config {
         flag_gpg_id: Option<String>,
         config_file_path: Option<PathBuf>,
     ) -> Self {
-        let config_dir = dirs::config_dir()
-            .unwrap_or_else(|| PathBuf::from("~/.config"))
-            .join("ruth-cli");
+        let home = std::env::var("HOME").unwrap_or_else(|_| "~".to_string());
+        let config_dir = PathBuf::from(home).join(".config").join("ruth-cli");
 
         let store_path = flag_store
             .or_else(|| std::env::var("RUTH_STORE").ok().map(PathBuf::from))

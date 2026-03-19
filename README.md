@@ -20,12 +20,8 @@ cargo install --path .
 
    ```bash
    # Option A: config file (recommended)
-   # macOS: ~/Library/Application Support/ruth-cli/
-   # Linux: ~/.config/ruth-cli/
-   CONFIG_DIR="${XDG_CONFIG_HOME:-${HOME}/.config}/ruth-cli"  # Linux
-   # CONFIG_DIR="${HOME}/Library/Application Support/ruth-cli"  # macOS
-   mkdir -p "$CONFIG_DIR"
-   echo 'gpg_key_id = "your-key@example.com"' > "$CONFIG_DIR/config.toml"
+   mkdir -p ~/.config/ruth-cli
+   echo 'gpg_key_id = "your-key@example.com"' > ~/.config/ruth-cli/config.toml
 
    # Option B: environment variable
    export RUTH_GPG_ID="your-key@example.com"
@@ -90,14 +86,7 @@ ruth-cli rm github
 
 ## Storage
 
-Secrets are stored in an encrypted file at the OS config directory, encrypted with your GPG key. The decrypted data is never written to disk.
-
-| OS | Store path |
-|----|-----------|
-| macOS | `~/Library/Application Support/ruth-cli/store.toml.gpg` |
-| Linux | `~/.config/ruth-cli/store.toml.gpg` |
-
-Override with `--config <path>` or `RUTH_STORE` env var.
+Secrets are stored in `~/.config/ruth-cli/store.toml.gpg`, encrypted with your GPG key. The decrypted data is never written to disk. Override with `--config <path>` or `RUTH_STORE` env var.
 
 ## Requirements
 
