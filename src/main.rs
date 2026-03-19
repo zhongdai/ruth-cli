@@ -58,8 +58,10 @@ fn cmd_add(config: &Config, args: cli::AddArgs) -> Result<()> {
         }
     };
 
+    let label = entry.label.clone();
     store.add(entry)?;
     save_store(config, gpg_key, &store)?;
+    eprintln!("Added entry '{}'. Use `ruth-cli get {}` to get the code.", label, label);
     Ok(())
 }
 
