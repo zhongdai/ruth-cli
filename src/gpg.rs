@@ -36,6 +36,8 @@ pub fn encrypt(plaintext: &str, recipient: &str, path: &std::path::Path) -> Resu
             "--quiet",
             "--yes",
             "--batch",
+            "--trust-model",
+            "always",
             "--encrypt",
             "--recipient",
             recipient,
