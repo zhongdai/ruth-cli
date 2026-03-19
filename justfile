@@ -32,14 +32,26 @@ fmt-check:
 check: test lint fmt-check
 
 # Create a new release tag and push it (triggers GitHub Actions)
+# Automatically bumps Cargo.toml version, commits, tags, and pushes.
 # Usage: just release 0.1.0
 release version:
     #!/usr/bin/env bash
     set -euo pipefail
     TAG="v{{version}}"
+    VERSION="{{version}}"
     if git rev-parse "$TAG" >/dev/null 2>&1; then
         echo "Error: tag $TAG already exists"
         exit 1
+    fi
+    # Bump version in Cargo.toml
+    CURRENT=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
+    if [ "$CURRENT" != "$VERSION" ]; then
+        echo "Bumping version: $CURRENT -> $VERSION"
+        sed -i '' "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
+        cargo check --quiet 2>/dev/null  # update Cargo.lock
+        git add Cargo.toml Cargo.lock
+        git commit -m "chore: bump version to $VERSION"
+        git push
     fi
     echo "Running checks before release..."
     just check
