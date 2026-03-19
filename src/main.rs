@@ -61,7 +61,10 @@ fn cmd_add(config: &Config, args: cli::AddArgs) -> Result<()> {
     let label = entry.label.clone();
     store.add(entry)?;
     save_store(config, gpg_key, &store)?;
-    eprintln!("Added entry '{}'. Use `ruth-cli get {}` to get the code.", label, label);
+    eprintln!(
+        "Added entry '{}'. Use `ruth-cli get {}` to get the code.",
+        label, label
+    );
     Ok(())
 }
 
@@ -88,7 +91,10 @@ fn cmd_list(config: &Config) -> Result<()> {
     let lw = entries.iter().map(|e| e.label.len()).max().unwrap_or(0);
     let dw = entries.iter().map(|e| e.domain.len()).max().unwrap_or(0);
     for entry in entries {
-        println!("{:<lw$}  {:<dw$}  {}", entry.label, entry.domain, entry.account);
+        println!(
+            "{:<lw$}  {:<dw$}  {}",
+            entry.label, entry.domain, entry.account
+        );
     }
     Ok(())
 }
