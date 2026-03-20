@@ -130,6 +130,21 @@ GPG key ID:  --gpg-id  >  RUTH_GPG_ID  >  gpg_key_id in ~/.config/ruth-cli/confi
 
 Secrets are stored in `~/.config/ruth-cli/store.toml.gpg`, encrypted with your GPG key. The decrypted data is never written to disk — it is held in memory only and piped directly to/from `gpg`.
 
+## Portable & Safe to Sync
+
+The store file (`store.toml.gpg`) is GPG-encrypted and safe to push to GitHub or any remote repository. This lets you share your TOTP secrets across multiple computers:
+
+1. Commit the store file to a private (or even public) repo — only you can decrypt it with your GPG private key.
+2. On another machine, import your GPG key and clone the repo.
+3. Point ruth-cli to the synced store:
+   ```bash
+   ruth-cli --config /path/to/synced/store.toml.gpg get github
+   # or set the env var
+   export RUTH_STORE=/path/to/synced/store.toml.gpg
+   ```
+
+The decrypted content never touches disk — it only exists in memory during `gpg` operations.
+
 ## Agent Integration
 
 ruth-cli is designed to be used by AI agents and scripts:
