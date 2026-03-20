@@ -62,7 +62,13 @@ release version:
     git push origin "$TAG"
     echo ""
     echo "Updating Homebrew tap..."
-    just bump-tap {{version}}
+    if just bump-tap {{version}}; then
+        echo "Homebrew tap updated."
+    else
+        echo ""
+        echo "WARNING: Homebrew tap update failed!"
+        echo "Run manually: just bump-tap {{version}}"
+    fi
     echo ""
     echo "Done! Release $TAG pushed. GitHub Actions will build and publish artifacts."
     echo "Track progress: https://github.com/zhongdai/ruth-cli/actions"
