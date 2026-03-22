@@ -42,7 +42,7 @@ fn normalize_base32(secret: &str) -> String {
         .to_uppercase();
     let pad_len = (8 - clean.len() % 8) % 8;
     let mut padded = clean;
-    padded.extend(std::iter::repeat('=').take(pad_len));
+    padded.extend(std::iter::repeat_n('=', pad_len));
     padded
 }
 
