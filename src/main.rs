@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Result};
-use clap::Parser;
+use clap::{CommandFactory, Parser};
+use clap_complete::generate;
 
 use ruth_cli::cli::{self, Cli, Commands};
 use ruth_cli::config::Config;
@@ -18,6 +19,10 @@ fn main() -> Result<()> {
         Commands::Get(args) => cmd_get(&config, &args.label),
         Commands::List => cmd_list(&config),
         Commands::Rm(args) => cmd_rm(&config, &args.label),
+        Commands::Completions(args) => {
+            generate(args.shell, &mut Cli::command(), "ruth-cli", &mut std::io::stdout());
+            Ok(())
+        }
     }
 }
 

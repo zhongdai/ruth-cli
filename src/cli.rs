@@ -1,4 +1,5 @@
 use clap::{Parser, Subcommand};
+use clap_complete::Shell;
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -52,6 +53,12 @@ pub enum Commands {
     ///
     /// Example:    ruth-cli rm github
     Rm(RmArgs),
+
+    /// Generate shell completion scripts.
+    ///
+    /// Example:    ruth-cli completions zsh > ~/.zfunc/_ruth-cli
+    ///             ruth-cli completions bash > /etc/bash_completion.d/ruth-cli
+    Completions(CompletionsArgs),
 }
 
 #[derive(clap::Args)]
@@ -101,4 +108,10 @@ pub struct GetArgs {
 pub struct RmArgs {
     /// Label of the entry to remove (as shown by `ruth-cli list`)
     pub label: String,
+}
+
+#[derive(clap::Args)]
+pub struct CompletionsArgs {
+    /// Shell to generate completions for
+    pub shell: Shell,
 }

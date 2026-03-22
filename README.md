@@ -11,6 +11,8 @@
 
 Agent-friendly TOTP authenticator CLI. Generates time-based one-time passwords (RFC 6238) from GPG-encrypted secrets. Non-interactive — designed for automation and AI agent workflows.
 
+[![demo](https://asciinema.org/a/dKXcmI87HiYZC0lv.svg)](https://asciinema.org/a/dKXcmI87HiYZC0lv)
+
 ## Install
 
 ### Homebrew (macOS / Linux)
@@ -96,6 +98,20 @@ ruth-cli rm github
 | `get <label>` | Print the current TOTP code to stdout |
 | `list` | List all entries with label, domain, and account |
 | `rm <label>` | Remove an entry by label |
+| `completions <shell>` | Generate shell completion scripts (bash, zsh, fish) |
+
+## Shell Completions
+
+```bash
+# Zsh
+ruth-cli completions zsh > ~/.zfunc/_ruth-cli
+
+# Bash
+ruth-cli completions bash > /etc/bash_completion.d/ruth-cli
+
+# Fish
+ruth-cli completions fish > ~/.config/fish/completions/ruth-cli.fish
+```
 
 ## Add Options
 
