@@ -20,7 +20,12 @@ fn main() -> Result<()> {
         Commands::List => cmd_list(&config),
         Commands::Rm(args) => cmd_rm(&config, &args.label),
         Commands::Completions(args) => {
-            generate(args.shell, &mut Cli::command(), "ruth-cli", &mut std::io::stdout());
+            generate(
+                args.shell,
+                &mut Cli::command(),
+                "ruth-cli",
+                &mut std::io::stdout(),
+            );
             Ok(())
         }
     }
