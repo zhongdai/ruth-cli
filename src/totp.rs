@@ -34,10 +34,22 @@ impl std::str::FromStr for Algorithm {
     }
 }
 
+fn normalize_base32(secret: &str) -> String {
+    let clean: String = secret
+        .chars()
+        .filter(|c| !c.is_whitespace() && *c != '=')
+        .collect::<String>()
+        .to_uppercase();
+    let pad_len = (8 - clean.len() % 8) % 8;
+    let mut padded = clean;
+    padded.extend(std::iter::repeat('=').take(pad_len));
+    padded
+}
+
 pub fn validate_secret(secret: &str) -> Result<()> {
-    let clean: String = secret.chars().filter(|c| !c.is_whitespace()).collect();
+    let padded = normalize_base32(secret);
     BASE32
-        .decode(clean.to_uppercase().as_bytes())
+        .decode(padded.as_bytes())
         .map_err(|e| anyhow!("invalid base32 secret: {}", e))?;
     Ok(())
 }
@@ -49,9 +61,9 @@ pub fn generate(
     digits: u32,
     algorithm: Algorithm,
 ) -> Result<String> {
-    let clean: String = secret.chars().filter(|c| !c.is_whitespace()).collect();
+    let padded = normalize_base32(secret);
     let key = BASE32
-        .decode(clean.to_uppercase().as_bytes())
+        .decode(padded.as_bytes())
         .map_err(|e| anyhow!("invalid base32 secret: {}", e))?;
 
     let counter = time / period;
