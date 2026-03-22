@@ -11,7 +11,7 @@
 
 Agent-friendly TOTP authenticator CLI. Generates time-based one-time passwords (RFC 6238) from GPG-encrypted secrets. Non-interactive — designed for automation and AI agent workflows.
 
-[![demo](https://asciinema.org/a/dKXcmI87HiYZC0lv.svg)](https://asciinema.org/a/dKXcmI87HiYZC0lv)
+[![demo](https://asciinema.org/a/dKXcmI87HiYZC0lv.png)](https://asciinema.org/a/dKXcmI87HiYZC0lv)
 
 ## Install
 
